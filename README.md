@@ -28,7 +28,7 @@ Los datos utilizados son sintéticos y se emplean exclusivamente con fines educa
     IAM ROLE + UNITY CATALOG
               |
               v
-      AZURE DATABRICKS / DATABRICKS
+      DATABRICKS SOBRE AWS
          PYSPARK + DELTA LAKE
               |
               v
