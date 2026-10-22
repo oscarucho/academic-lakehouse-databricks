@@ -37,8 +37,7 @@ jobs:
           databricks workspace mkdirs /Shared/academic_lakehouse_prod/proceso
           databricks workspace import-dir proceso /Shared/academic_lakehouse_prod/proceso --overwrite
 
-      
-            - name: Run Bronze Silver Gold and Dimensional Model
+      - name: Run Bronze Silver Gold and Dimensional Model
         run: |
           databricks jobs submit --json '{
             "run_name": "academic_lakehouse_prod",
