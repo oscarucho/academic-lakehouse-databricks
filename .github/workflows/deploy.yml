@@ -1,0 +1,55 @@
+
+name: Academic Lakehouse CI-CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "proceso/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-and-run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    env:
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Databricks CLI
+        uses: databricks/setup-cli@main
+
+      - name: Validate Databricks connection
+        run: databricks current-user me
+
+      - name: Deploy notebooks to production folder
+        run: |
+          databricks workspace mkdirs /Shared/academic_lakehouse_prod/proceso
+          databricks workspace import-dir proceso /Shared/academic_lakehouse_prod/proceso --overwrite
+
+      - name: Run Bronze
+        run: |
+          databricks jobs submit --json '{
+            "run_name": "academic_bronze_prod",
+            "tasks": [{
+              "task_key": "bronze",
+              "notebook_task": {
+                "notebook_path": "/Shared/academic_lakehouse_prod/proceso/01_bronze"
+              },
+              "environment_key": "default"
+            }],
+            "environments": [{
+              "environment_key": "default",
+              "spec": {"client": "1"}
+            }]
+          }' --no-wait
