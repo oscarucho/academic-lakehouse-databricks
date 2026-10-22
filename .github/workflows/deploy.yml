@@ -37,19 +37,46 @@ jobs:
           databricks workspace mkdirs /Shared/academic_lakehouse_prod/proceso
           databricks workspace import-dir proceso /Shared/academic_lakehouse_prod/proceso --overwrite
 
-      - name: Run Bronze
+      
+      - name: Run Bronze Silver Gold
         run: |
           databricks jobs submit --json '{
-            "run_name": "academic_bronze_prod",
-            "tasks": [{
-              "task_key": "bronze",
-              "notebook_task": {
-                "notebook_path": "/Shared/academic_lakehouse_prod/proceso/01_bronze"
+            "run_name": "academic_lakehouse_prod",
+            "tasks": [
+              {
+                "task_key": "bronze",
+                "notebook_task": {
+                  "notebook_path": "/Shared/academic_lakehouse_prod/proceso/01_bronze"
+                },
+                "environment_key": "default"
               },
-              "environment_key": "default"
-            }],
-            "environments": [{
-              "environment_key": "default",
-              "spec": {"client": "1"}
-            }]
+              {
+                "task_key": "silver",
+                "depends_on": [
+                  {"task_key": "bronze"}
+                ],
+                "notebook_task": {
+                  "notebook_path": "/Shared/academic_lakehouse_prod/proceso/02_silver"
+                },
+                "environment_key": "default"
+              },
+              {
+                "task_key": "gold",
+                "depends_on": [
+                  {"task_key": "silver"}
+                ],
+                "notebook_task": {
+                  "notebook_path": "/Shared/academic_lakehouse_prod/proceso/03_gold"
+                },
+                "environment_key": "default"
+              }
+            ],
+            "environments": [
+              {
+                "environment_key": "default",
+                "spec": {
+                  "client": "1"
+                }
+              }
+            ]
           }' --no-wait
