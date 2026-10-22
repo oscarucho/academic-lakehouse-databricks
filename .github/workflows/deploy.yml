@@ -38,7 +38,7 @@ jobs:
           databricks workspace import-dir proceso /Shared/academic_lakehouse_prod/proceso --overwrite
 
       
-      - name: Run Bronze Silver Gold
+            - name: Run Bronze Silver Gold and Dimensional Model
         run: |
           databricks jobs submit --json '{
             "run_name": "academic_lakehouse_prod",
@@ -67,6 +67,16 @@ jobs:
                 ],
                 "notebook_task": {
                   "notebook_path": "/Shared/academic_lakehouse_prod/proceso/03_gold"
+                },
+                "environment_key": "default"
+              },
+              {
+                "task_key": "modelo_dimensional",
+                "depends_on": [
+                  {"task_key": "gold"}
+                ],
+                "notebook_task": {
+                  "notebook_path": "/Shared/academic_lakehouse_prod/proceso/04_modelo_dimensional"
                 },
                 "environment_key": "default"
               }
